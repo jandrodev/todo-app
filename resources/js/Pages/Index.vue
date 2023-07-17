@@ -162,9 +162,28 @@
                         </q-item-label>
                     </q-item-section>
                     <q-item-section side>
-                        <q-btn icon="delete" round flat></q-btn>
+                        <q-btn @click="openDeleteTaskConfirmationDialog(taskNonCompleted.id)" icon="delete" round
+                               flat></q-btn>
                     </q-item-section>
                 </q-item>
+
+                <q-dialog v-model="openDeleteTaskDialog">
+                    <q-card>
+                        <q-card-section class="row items-center q-pb-none">
+                            <div class="text-h6">Eliminar tarea</div>
+                            <q-space/>
+                            <q-btn icon="close" flat round dense v-close-popup/>
+                        </q-card-section>
+
+                        <q-card-section>
+                            ¿Está seguro de eliminar esta tarea?
+                        </q-card-section>
+
+                        <q-card-actions align="right" class="text-primary">
+                            <q-btn label="Eliminar" @click="deleteTask(taskForDeleteId)"/>
+                        </q-card-actions>
+                    </q-card>
+                </q-dialog>
 
                 <q-separator vertical inset/>
 
@@ -202,6 +221,9 @@ export default {
         newTaskCategories: null,
         openAddTaskDialog: false,
         tasksNonCompletedList: [],
+        openDeleteTaskDialog: false,
+        deleteTaskConfirmation: false,
+        taskForDeleteId: null,
     }),
 
     mounted() {
@@ -238,6 +260,28 @@ export default {
                 }
             })
         },
+        openDeleteTaskConfirmationDialog(taskId) {
+            this.openDeleteTaskDialog = true
+            this.taskForDeleteId = taskId
+        },
+        deleteTask(taskId) {
+            const headers = {
+                'Accept': 'application/json'
+            }
+
+            axios.post('/delete-task', {id: taskId}, {headers: headers})
+                .then(({data}) => {
+                    this.tasksNonCompletedList = this.tasksNonCompletedList.filter(object => {
+                        return object.id !== taskId
+                    })
+
+                    this.deleteTaskConfirmation = false
+                    this.openDeleteTaskDialog = false
+                })
+                .catch((error) => {
+                    console.log(error)
+                });
+        }
     }
 }
 </script>
