@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\IndexController;
+use App\Http\Controllers\{IndexController, TaskController};
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,3 +15,5 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', [IndexController::class, 'indexView'])->name('index');
+
+Route::post('/create-task', [TaskController::class, 'create']);

@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         /* @var $tasks Task */
-        $tasks = Task::factory(20)->create();
+        $tasks = Task::factory(5)->create();
 
         foreach ($tasks as $task) {
             $task->categories()->sync([1, 2]);

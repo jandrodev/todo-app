@@ -21,6 +21,7 @@ class IndexController extends Controller
     public function indexView(): Response
     {
         return Inertia::render('Index', [
+            'categories' => $this->viewHandler->categoriesList(),
             'tasksNonCompleted' => $this->viewHandler->tasksList(false),
             'tasksCompleted' => $this->viewHandler->tasksList(),
         ]);

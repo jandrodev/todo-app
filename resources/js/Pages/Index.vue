@@ -85,13 +85,65 @@
         <q-page-container>
             <q-page class="q-pa-md">
 
-                <p>Tareas por completar</p>
+                <p class="text-h6">Tareas por completar</p>
 
                 <q-page-sticky position="bottom-right" :offset="[18, 18]">
-                    <q-btn fab icon="add" color="accent"/>
+                    <q-btn @click="openAddTaskDialog = true" fab icon="add" color="accent"/>
                 </q-page-sticky>
 
-                <q-item v-for="taskNonCompleted in tasksNonCompleted" :key="taskNonCompleted.id">
+                <q-dialog v-model="openAddTaskDialog">
+                    <q-card style="width: 700px; max-width: 80vw;">
+
+                        <q-form
+                            ref="createTaskForm"
+                            @submit="createTask"
+                            class="q-gutter-md"
+                        >
+
+                            <q-card-section class="row items-center q-pb-none">
+                                <div class="text-h6">Añadir tarea</div>
+                                <q-space/>
+                                <q-btn icon="close" flat round dense v-close-popup/>
+                            </q-card-section>
+
+                            <q-card-section>
+                                <div class="q-pa-md">
+                                    <q-input
+                                        v-model="newTaskContent"
+                                        label="Contenido"
+                                        filled
+                                        type="textarea"
+                                        lazy-rules
+                                        :rules="[ val => val && val.length > 0 || 'El contenido es obligatorio']"
+                                    />
+                                </div>
+
+                                <div class="q-pa-md">
+                                    <q-select
+                                        filled
+                                        v-model="newTaskCategories"
+                                        multiple
+                                        clearable
+                                        :options="categories"
+                                        option-value="id"
+                                        option-label="name"
+                                        label="Categorías"
+                                        emit-value
+                                        map-options
+                                    />
+                                </div>
+
+                                <div class="q-pa-md">
+                                    <q-btn label="Crear" type="submit" color="primary"/>
+                                </div>
+                            </q-card-section>
+                        </q-form>
+
+                    </q-card>
+                </q-dialog>
+
+
+                <q-item v-for="taskNonCompleted in tasksNonCompletedList" :key="taskNonCompleted.id">
                     <q-item-section avatar>
                         <q-checkbox
                             :id="taskNonCompleted.id"
@@ -122,10 +174,15 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import axios from 'axios';
 
 export default {
     props: {
+        categories: {
+            type: Array,
+            required: true,
+            default: [],
+        },
         tasksNonCompleted: {
             type: Array,
             required: true,
@@ -138,22 +195,49 @@ export default {
         }
     },
 
+    data: () => ({
+        leftDrawerOpen: false,
+        createTaskForm: null,
+        newTaskContent: '',
+        newTaskCategories: null,
+        openAddTaskDialog: false,
+        tasksNonCompletedList: [],
+    }),
+
     mounted() {
-        console.log(this.tasksNonCompleted);
-        console.log(this.tasksCompleted);
+        this.tasksNonCompletedList = this.tasksNonCompleted
     },
 
-    setup() {
-        const leftDrawerOpen = ref(false)
+    methods: {
+        toggleLeftDrawer() {
+            this.leftDrawerOpen.value = !this.leftDrawerOpen.value
+        },
+        createTask() {
+            this.$refs.createTaskForm.validate().then(success => {
+                if (success) {
+                    const headers = {
+                        'Accept': 'application/json'
+                    }
 
-        function toggleLeftDrawer() {
-            leftDrawerOpen.value = !leftDrawerOpen.value
-        }
+                    const data = {
+                        content: this.newTaskContent,
+                        categories: this.newTaskCategories,
+                        completed: false
+                    }
 
-        return {
-            leftDrawerOpen,
-            toggleLeftDrawer
-        }
+                    axios.post('/create-task', data, {headers: headers})
+                        .then(({data}) => {
+                            this.tasksNonCompletedList.push(data)
+                            this.openAddTaskDialog = false
+                            this.newTaskContent = ''
+                            this.newTaskCategories = null
+                        })
+                        .catch((error) => {
+                            console.log(error)
+                        });
+                }
+            })
+        },
     }
 }
 </script>
