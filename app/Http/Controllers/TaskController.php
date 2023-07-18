@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\{CreateRequest, DeleteRequest};
+use App\Http\Requests\{CompleteRequest, CreateRequest, DeleteRequest};
 use App\Models\Task;
 use Illuminate\Http\JsonResponse;
 
@@ -33,8 +33,25 @@ class TaskController extends Controller
      */
     public function delete(DeleteRequest $request): JsonResponse
     {
-        Task::destroy($request->only('id'));
+        $task = Task::find($request->get('id'));
+        $task->delete();
 
-        return response()->json($request->validated());
+        return response()->json($task);
+    }
+
+    /**
+     * @param CompleteRequest $request
+     *
+     * @return JsonResponse
+     */
+    public function complete(CompleteRequest $request): JsonResponse
+    {
+        $task = Task::find($request->get('id'));
+        $task->completed = $request->get('completed');
+        $task->save();
+
+        $task->load('categories');
+
+        return response()->json($task);
     }
 }

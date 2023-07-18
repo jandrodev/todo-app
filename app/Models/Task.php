@@ -13,6 +13,8 @@ class Task extends Model
 
     protected $fillable = ['content', 'completed'];
 
+    protected $casts = ['completed' => 'boolean'];
+
     /**
      * @return BelongsToMany
      */

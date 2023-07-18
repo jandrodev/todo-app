@@ -18,3 +18,4 @@ Route::get('/', [IndexController::class, 'indexView'])->name('index');
 
 Route::post('/create-task', [TaskController::class, 'create']);
 Route::post('/delete-task', [TaskController::class, 'delete']);
+Route::post('/complete-task', [TaskController::class, 'complete']);
